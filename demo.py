@@ -119,7 +119,6 @@ if __name__ == '__main__':
     i = 0
     
     while True:
-
       # read data
       # img_l_path = 'demo/left.png'
       # img_r_path = 'demo/right.png'
@@ -352,6 +351,9 @@ if __name__ == '__main__':
                 if score > vis_thresh:
                   if args.use_lidar:
                     im_box = vis_utils.vis_box_in_bev(im_box, xyz, dim, theta, width=im2show_left.shape[0]*2)
+                  else:
+                    im_box = np.ones((im2show_left.shape[0]*2, im2show_left.shape[0]), np.uint8)
+                    im_box = vis_utils.vis_box_in_bev(im_box, xyz, dim, theta, width=im2show_left.shape[0]*2)
                   im2show_left = vis_utils.vis_single_box_in_img(im2show_left, calib, xyz, dim, theta)
 
           solve_time = time.time() - solve_tic
@@ -360,14 +362,13 @@ if __name__ == '__main__':
                         .format(detect_time, solve_time))
 
       im2show = np.concatenate((im2show_left, im2show_right), axis=0)
-      if args.use_lidar:
-        im2show = np.concatenate((im2show, im_box), axis=1)
+      im2show = np.concatenate((im2show, im_box), axis=1)
       #cv2.imshow('result', im2show)
       fname = os.path.join(args.output_path, f'{i:06}.png')
       cv2.imwrite(fname, im2show)
 
       i = i+1
-      
+
       if i > args.iteration:
         break
       
