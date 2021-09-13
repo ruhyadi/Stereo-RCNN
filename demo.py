@@ -72,7 +72,7 @@ def parse_args():
   parser.add_argument('--i', dest='number of images',
                       help='how many number of images',
                       default=20, type=int)
-  parser.add_argument('--output', dest='output_path',
+  parser.add_argument('--output_path', dest='output_path',
                       help='output path', default="/",
                       type=str)
 
@@ -363,7 +363,7 @@ if __name__ == '__main__':
       if args.use_lidar:
         im2show = np.concatenate((im2show, im_box), axis=1)
       #cv2.imshow('result', im2show)
-      fname = os.path.join(args.output, f'{i:06}.png')
+      fname = os.path.join(args.output_path, f'{i:06}.png')
       cv2.imwrite(fname, im2show)
 
       if i > args.i:
