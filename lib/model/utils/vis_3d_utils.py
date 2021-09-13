@@ -32,7 +32,7 @@ def Space2Bev(P0, side_range=(-20, 20),
     return np.array([x_img, y_img])
 
 def vis_lidar_in_bev(pointcloud, width=750, side_range=(-20, 20), fwd_range=(0,70),
-                    min_height=-2.5, max_height=1.5, use_lidar=True):
+                    min_height=-2.5, max_height=1.5):
     ''' Project pointcloud to bev image for simply visualization
 
         Inputs:
@@ -41,36 +41,32 @@ def vis_lidar_in_bev(pointcloud, width=750, side_range=(-20, 20), fwd_range=(0,7
             cv color image
 
     '''
-    if use_lidar=True:
-        res = float(fwd_range[1]-fwd_range[0])/width
-        x_lidar = pointcloud[0, :]
-        y_lidar = pointcloud[1, :]
-        z_lidar = pointcloud[2, :]
+    res = float(fwd_range[1]-fwd_range[0])/width
+    x_lidar = pointcloud[0, :]
+    y_lidar = pointcloud[1, :]
+    z_lidar = pointcloud[2, :]
 
-        ff = np.logical_and((z_lidar > fwd_range[0]), (z_lidar < fwd_range[1]))
-        ss = np.logical_and((x_lidar > side_range[0]), (x_lidar < side_range[1]))
-        indices = np.argwhere(np.logical_and(ff,ss)).flatten()
+    ff = np.logical_and((z_lidar > fwd_range[0]), (z_lidar < fwd_range[1]))
+    ss = np.logical_and((x_lidar > side_range[0]), (x_lidar < side_range[1]))
+    indices = np.argwhere(np.logical_and(ff,ss)).flatten()
 
-        x_img = (x_lidar[indices]/res).astype(np.int32) 
-        y_img = (-z_lidar[indices]/res).astype(np.int32)
+    x_img = (x_lidar[indices]/res).astype(np.int32) 
+    y_img = (-z_lidar[indices]/res).astype(np.int32)
         
-        x_img -= int(np.floor(side_range[0]/res))
-        y_img += int(np.floor(fwd_range[1]/res)) - 1
+    x_img -= int(np.floor(side_range[0]/res))
+    y_img += int(np.floor(fwd_range[1]/res)) - 1
 
-        x_max = int((side_range[1] - side_range[0])/res)
-        y_max = int((fwd_range[1] - fwd_range[0])/res)
-        im = np.zeros([y_max, x_max], dtype=np.uint8)
-        x_img[x_img>x_max-1] = x_max-1
-        y_img[y_img>y_max-1] = y_max-1
+    x_max = int((side_range[1] - side_range[0])/res)
+    y_max = int((fwd_range[1] - fwd_range[0])/res)
+    im = np.zeros([y_max, x_max], dtype=np.uint8)
+    x_img[x_img>x_max-1] = x_max-1
+    y_img[y_img>y_max-1] = y_max-1
 
-        im[:,:] = 255
-        im[y_img, x_img] = 100
-        im_rgb = cv2.cvtColor(im, cv2.COLOR_GRAY2BGR)
+    im[:,:] = 255
+    im[y_img, x_img] = 100
+    im_rgb = cv2.cvtColor(im, cv2.COLOR_GRAY2BGR)
         
-        return im_rgb
-    else:
-        img = np.ones((width, 1/2*width), np.uint8)
-        return img
+    return im_rgb
 
 def vis_box_in_bev(im_bev, pos, dim, orien, width=750, gt=False,
                    side_range=(-20, 20), fwd_range=(0,70),
