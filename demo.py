@@ -17,7 +17,8 @@ import argparse
 import shutil
 import time
 import cv2
-from scipy.misc import imread
+#from scipy.misc import imread
+from skimage.io import imread
 import torch
 from torch.autograd import Variable
 import torch.nn as nn
