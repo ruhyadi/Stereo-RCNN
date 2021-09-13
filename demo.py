@@ -256,6 +256,8 @@ if __name__ == '__main__':
         lidar_path = os.path.join(args.lidar_path, f'{i:60}.bin')
         pointcloud = kitti_utils.get_point_cloud(lidar_path, calib)
         im_box = vis_utils.vis_lidar_in_bev(pointcloud, width=im2show_left.shape[0]*2)
+      else:
+        im_box = np.ones((im2show_left.shape[0]*2, im2show_left.shape[0]), np.uint8)
 
       for j in xrange(1, len(kitti_classes)):
         inds = torch.nonzero(scores[:,j] > eval_thresh).view(-1)
@@ -352,7 +354,6 @@ if __name__ == '__main__':
                   if args.use_lidar:
                     im_box = vis_utils.vis_box_in_bev(im_box, xyz, dim, theta, width=im2show_left.shape[0]*2)
                   else:
-                    im_box = np.ones((im2show_left.shape[0]*2, im2show_left.shape[0]), np.uint8)
                     im_box = vis_utils.vis_box_in_bev(im_box, xyz, dim, theta, width=im2show_left.shape[0]*2)
                   im2show_left = vis_utils.vis_single_box_in_img(im2show_left, calib, xyz, dim, theta)
 
