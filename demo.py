@@ -69,7 +69,7 @@ def parse_args():
   parser.add_argument('--checkpoint', dest='checkpoint',
                       help='checkpoint to load network',
                       default=6477, type=int)
-  parser.add_argument('--iteration', dest='number of images',
+  parser.add_argument('--iteration', dest='iteration',
                       help='how many number of images',
                       default=20, type=int)
   parser.add_argument('--output_path', dest='output_path',
