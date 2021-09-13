@@ -17,6 +17,7 @@ import argparse
 import shutil
 import time
 import cv2
+from scipy.misc import imread
 import torch
 from torch.autograd import Variable
 import torch.nn as nn
@@ -26,7 +27,7 @@ from roi_data_layer.roidb import combined_roidb
 from roi_data_layer.roibatchLoader import roibatchLoader
 from model.utils.config import cfg
 from model.rpn.bbox_transform import clip_boxes
-from model.roi_layers import nms
+from model.nms.nms_wrapper import nms
 from model.rpn.bbox_transform import bbox_transform_inv, kpts_transform_inv, border_transform_inv
 from model.utils.net_utils import save_net, load_net, vis_detections
 from model.stereo_rcnn.resnet import resnet
@@ -49,12 +50,32 @@ def parse_args():
   parser.add_argument('--load_dir', dest='load_dir',
                       help='directory to load models', default="models_stereo",
                       type=str)
+  parser.add_argument('--left_path', dest='left_path',
+                      help='path to left images/images_2', default="images_2",
+                      type=str)
+  parser.add_argument('--right_path', dest='right_path',
+                      help='path to right images/images_3', default="images_2",
+                      type=str)
+  parser.add_argument('--calib_path', dest='calib_path',
+                      help='path to calibration', default="calib",
+                      type=str)
+  parser.add_argument('--use_lidar', dest='use_lidar',
+                      help='Store true for using lidar', action='store_true')
+  parser.add_argument('--lidar_path', dest='lidar_path',
+                      help='path to lidar/optional', default="lidar",
+                      type=str)
   parser.add_argument('--checkepoch', dest='checkepoch',
                       help='checkepoch to load network',
-                      default=12, type=int)
+                      default=20, type=int)
   parser.add_argument('--checkpoint', dest='checkpoint',
                       help='checkpoint to load network',
                       default=6477, type=int)
+  parser.add_argument('--i', dest='number of images',
+                      help='how many number of images',
+                      default=20, type=int)
+  parser.add_argument('--output', dest='output_path',
+                      help='output path', default="/",
+                      type=str)
 
   args = parser.parse_args()
   return args
@@ -81,31 +102,36 @@ if __name__ == '__main__':
   stereoRCNN.load_state_dict(checkpoint['model'])
   print('load model successfully!')
 
-  with torch.no_grad():
-    # initilize the tensor holder here.
-    im_left_data = Variable(torch.FloatTensor(1).cuda())
-    im_right_data = Variable(torch.FloatTensor(1).cuda())
-    im_info = Variable(torch.FloatTensor(1).cuda())
-    num_boxes = Variable(torch.LongTensor(1).cuda())
-    gt_boxes = Variable(torch.FloatTensor(1).cuda())
+  # initilize the tensor holder here.
+  im_left_data = Variable(torch.FloatTensor(1).cuda(), volatile=True)
+  im_right_data = Variable(torch.FloatTensor(1).cuda(), volatile=True)
+  im_info = Variable(torch.FloatTensor(1).cuda(), volatile=True)
+  num_boxes = Variable(torch.LongTensor(1).cuda(), volatile=True)
+  gt_boxes = Variable(torch.FloatTensor(1).cuda(), volatile=True)
 
-    stereoRCNN.cuda()
+  stereoRCNN.cuda()
 
-    eval_thresh = 0.05
-    vis_thresh = 0.7
+  eval_thresh = 0.05
+  vis_thresh = 0.7
 
-    stereoRCNN.eval()
-    
+  stereoRCNN.eval()
+
+  # gathering data
+  i = 0
+
+  while True:
     # read data
-    img_l_path = 'demo/left.png'
-    img_r_path = 'demo/right.png'
+    # img_l_path = 'demo/left.png'
+    # img_r_path = 'demo/right.png'
+    img_l_path = os.path.join(args.left_path, f'{i:06}.png')
+    img_r_path = os.path.join(args.right_path, f'{i:06}.png')
 
-    img_left = cv2.imread(img_l_path)
-    img_right = cv2.imread(img_r_path)
+    img_left = imread(img_l_path)
+    img_right = imread(img_r_path)
 
     # rgb -> bgr
-    img_left = img_left.astype(np.float32, copy=False)
-    img_right = img_right.astype(np.float32, copy=False)
+    img_left = img_left[:,:,::-1].astype(np.float32, copy=False)
+    img_right = img_right[:,:,::-1].astype(np.float32, copy=False)
 
     img_left -= cfg.PIXEL_MEANS
     img_right -= cfg.PIXEL_MEANS
@@ -120,7 +146,7 @@ if __name__ == '__main__':
                     interpolation=cv2.INTER_LINEAR)
     
     info = np.array([[img_left.shape[0], img_left.shape[1], \
-                         im_scale]], dtype=np.float32)
+                        im_scale]], dtype=np.float32)
     
     img_left = torch.from_numpy(img_left)
     img_left = img_left.permute(2, 0, 1).unsqueeze(0).contiguous()
@@ -220,13 +246,17 @@ if __name__ == '__main__':
     det_toc = time.time()
     detect_time = det_toc - det_tic
 
-    calib = kitti_utils.read_obj_calibration('demo/calib.txt')
+    #calibration data
+    calib_path = os.path.join(args.calib_path, f'{i:06}.txt')
+    calib = kitti_utils.read_obj_calibration(calib_path)
 
     im2show_left = np.copy(cv2.imread(img_l_path))
     im2show_right = np.copy(cv2.imread(img_r_path))
     
-    pointcloud = kitti_utils.get_point_cloud('demo/lidar.bin', calib)
-    im_box = vis_utils.vis_lidar_in_bev(pointcloud, width=im2show_left.shape[0]*2)
+    if args.use_lidar:
+      lidar_path = os.path.join(args.lidar_path, f'{i:60}.bin')
+      pointcloud = kitti_utils.get_point_cloud(lidar_path, calib)
+      im_box = vis_utils.vis_lidar_in_bev(pointcloud, width=im2show_left.shape[0]*2)
 
     for j in xrange(1, len(kitti_classes)):
       inds = torch.nonzero(scores[:,j] > eval_thresh).view(-1)
@@ -249,7 +279,7 @@ if __name__ == '__main__':
         cls_dim_orien = cls_dim_orien[order]
         cls_kpts = cls_kpts[order] 
 
-        keep = nms(cls_boxes_left[order, :], cls_scores[order], cfg.TEST.NMS)
+        keep = nms(cls_dets_left, cfg.TEST.NMS, force_cpu= not cfg.USE_GPU_NMS)
         keep = keep.view(-1).long()
         cls_dets_left = cls_dets_left[keep]
         cls_dets_right = cls_dets_right[keep]
@@ -288,8 +318,8 @@ if __name__ == '__main__':
             sin_alpha = cls_dim_orien[detect_idx,3]
             cos_alpha = cls_dim_orien[detect_idx,4]
             alpha = m.atan2(sin_alpha, cos_alpha)
-            status, state = box_estimator.solve_x_y_z_theta_from_kpt(im2show_left.shape, calib, alpha, \
-                                          dim, box_left, box_right, cls_kpts[detect_idx].cpu().numpy())
+            status, state = box_estimator.solve_x_y_z_theta_from_kpt(im2show_left.shape,\
+                                        calib, alpha, dim, box_left, box_right, cls_kpts[detect_idx])
             if status > 0: # not faild
               poses = im_left_data.data.new(8).zero_()
               xyz = np.array([state[0], state[1], state[2]])
@@ -310,17 +340,18 @@ if __name__ == '__main__':
           # do 3D rectify using the aligned disparity
           for solved_idx in range(succ.size(0)):
             if succ[solved_idx] > 0: # succ
-              box_left = boxes_all[solved_idx,0:4].cpu().numpy()
-              score = boxes_all[solved_idx,4].cpu().numpy()
-              dim = poses_all[solved_idx,3:6].cpu().numpy()
+              box_left = boxes_all[solved_idx,0:4]
+              score = boxes_all[solved_idx,4]
+              dim = poses_all[solved_idx,3:6]
               state_rect, z = box_estimator.solve_x_y_theta_from_kpt(im2show_left.shape, calib, \
-                                          poses_all[solved_idx,7].cpu().numpy(), dim, box_left, \
-                                          dis_final[solved_idx].cpu().numpy(), kpts_all[solved_idx].cpu().numpy())
+                                                poses_all[solved_idx,7], dim, box_left, \
+                                                dis_final[solved_idx], kpts_all[solved_idx])
               xyz = np.array([state_rect[0], state_rect[1], z])
               theta = state_rect[2]
 
               if score > vis_thresh:
-                im_box = vis_utils.vis_box_in_bev(im_box, xyz, dim, theta, width=im2show_left.shape[0]*2)
+                if args.use_lidar:
+                  im_box = vis_utils.vis_box_in_bev(im_box, xyz, dim, theta, width=im2show_left.shape[0]*2)
                 im2show_left = vis_utils.vis_single_box_in_img(im2show_left, calib, xyz, dim, theta)
 
         solve_time = time.time() - solve_tic
@@ -329,15 +360,15 @@ if __name__ == '__main__':
                       .format(detect_time, solve_time))
 
     im2show = np.concatenate((im2show_left, im2show_right), axis=0)
-    im2show = np.concatenate((im2show, im_box), axis=1)
-    cv2.imshow('result', im2show)
+    if args.use_lidar:
+      im2show = np.concatenate((im2show, im_box), axis=1)
+    # cv2.imshow('result', im2show)
+    cv2.imwrite(args.output, im2show)
 
-    k = cv2.waitKey(-1)
-    if k == 27:    # Esc key to stop
-        print('exit!')
-        sys.exit()
+    if i > args.i:
+      break
 
-
-
-
-
+    # k = cv2.waitKey(-1)
+    # if k == 27:    # Esc key to stop
+    #     print('exit!')
+    #     sys.exit()
