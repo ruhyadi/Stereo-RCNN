@@ -366,6 +366,8 @@ if __name__ == '__main__':
       fname = os.path.join(args.output_path, f'{i:06}.png')
       cv2.imwrite(fname, im2show)
 
+      i = i+1
+      
       if i > args.iteration:
         break
       
