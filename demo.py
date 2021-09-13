@@ -89,7 +89,7 @@ if __name__ == '__main__':
   if not os.path.exists(input_dir):
     raise Exception('There is no input directory for loading network from ' + input_dir)
   load_name = os.path.join(input_dir,
-    'stereo_rcnn_{}_{}.pth'.format(args.checkepoch, args. ))
+    'stereo_rcnn_{}_{}.pth'.format(args.checkepoch, args.checkpoint))
   kitti_classes = np.asarray(['__background__', 'Car'])
 
   # initilize the network here.
