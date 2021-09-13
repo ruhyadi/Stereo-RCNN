@@ -49,16 +49,36 @@ def parse_args():
   parser.add_argument('--load_dir', dest='load_dir',
                       help='directory to load models', default="models_stereo",
                       type=str)
+  parser.add_argument('--left_path', dest='left_path',
+                      help='path to left images/images_2', default="images_2",
+                      type=str)
+  parser.add_argument('--right_path', dest='right_path',
+                      help='path to right images/images_3', default="images_2",
+                      type=str)
+  parser.add_argument('--calib_path', dest='calib_path',
+                      help='path to calibration', default="calib",
+                      type=str)
+  parser.add_argument('--use_lidar', dest='use_lidar',
+                      help='Store true for using lidar', action='store_true')
+  parser.add_argument('--lidar_path', dest='lidar_path',
+                      help='path to lidar/optional', default="lidar",
+                      type=str)
   parser.add_argument('--checkepoch', dest='checkepoch',
                       help='checkepoch to load network',
-                      default=12, type=int)
+                      default=20, type=int)
   parser.add_argument('--checkpoint', dest='checkpoint',
                       help='checkpoint to load network',
                       default=6477, type=int)
+  parser.add_argument('--i', dest='number of images',
+                      help='how many number of images',
+                      default=20, type=int)
+  parser.add_argument('--output', dest='output_path',
+                      help='output path', default="/",
+                      type=str)
 
   args = parser.parse_args()
   return args
-
+  
 if __name__ == '__main__':
 
   args = parse_args()
