@@ -65,7 +65,7 @@ def parse_args():
                       type=str)
   parser.add_argument('--checkepoch', dest='checkepoch',
                       help='checkepoch to load network',
-                      default=20, type=int)
+                      default=12, type=int)
   parser.add_argument('--checkpoint', dest='checkpoint',
                       help='checkpoint to load network',
                       default=6477, type=int)
@@ -78,7 +78,7 @@ def parse_args():
 
   args = parser.parse_args()
   return args
-  
+
 if __name__ == '__main__':
 
   args = parse_args()
@@ -89,7 +89,7 @@ if __name__ == '__main__':
   if not os.path.exists(input_dir):
     raise Exception('There is no input directory for loading network from ' + input_dir)
   load_name = os.path.join(input_dir,
-    'stereo_rcnn_{}_{}.pth'.format(args.checkepoch, args.checkpoint))
+    'stereo_rcnn_{}_{}.pth'.format(args.checkepoch, args. ))
   kitti_classes = np.asarray(['__background__', 'Car'])
 
   # initilize the network here.
@@ -115,6 +115,8 @@ if __name__ == '__main__':
     vis_thresh = 0.7
 
     stereoRCNN.eval()
+
+    i = 0
     
     while True:
 
@@ -363,6 +365,9 @@ if __name__ == '__main__':
       #cv2.imshow('result', im2show)
       fname = os.path.join(args.output, f'{i:06}.png')
       cv2.imwrite(fname, im2show)
+
+      if i > args.i:
+        break
       
       # k = cv2.waitKey(-1)
       # if k == 27:    # Esc key to stop
