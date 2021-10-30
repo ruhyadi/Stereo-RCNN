@@ -58,6 +58,8 @@ def parse_args():
   parser.add_argument('--calib_path', dest='calib_path',
                       help='path to calibration', default="calib",
                       type=str)
+  parser.add_argument('--calib_iteration', dest='calib_iteration',
+                      help='Store true for using iteration', action='store_true')
   parser.add_argument('--use_lidar', dest='use_lidar',
                       help='Store true for using lidar', action='store_true')
   parser.add_argument('--lidar_path', dest='lidar_path',
@@ -246,7 +248,10 @@ if __name__ == '__main__':
       detect_time = det_toc - det_tic
 
       #calibration data
-      calib_path = os.path.join(args.calib_path, f'{i:06}.txt')
+      if calib_iteration:
+        calib_path = os.path.join(args.calib_path, f'{i:06}.txt')
+      else:
+        calib_path = os.path.join(args.calib_path, f'{i:06}.txt')
       calib = kitti_utils.read_obj_calibration(calib_path)
 
       im2show_left = np.copy(cv2.imread(img_l_path))

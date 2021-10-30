@@ -148,7 +148,7 @@ def read_obj_calibration(CALIB_PATH):
     tr_rect = data[4]
     tr_rect = tr_rect[1:]
     tr_rect = [float(tr_rect[i]) for i in range(len(tr_rect))]
-    frame_calibration_info.r0_rect = np.reshape(tr_rect, (3, 3))
+    frame_calibration_info. v = np.reshape(tr_rect, (3, 3))
 
     # Read in velodyne to cam matrix
     tr_v2c = data[5]
