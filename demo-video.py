@@ -127,8 +127,6 @@ if __name__ == '__main__':
       # read video data
       _, left_frame = left_cap.read()
       _, right_frame = right_cap.read()
-
-      print('successs')
       
       # # img_l_path = 'demo/left.png'
       # # img_r_path = 'demo/right.png'
@@ -376,10 +374,10 @@ if __name__ == '__main__':
                     im_box = vis_utils.vis_box_in_bev(im_box, xyz, dim, theta, width=im2show_left.shape[0]*2)
                   im2show_left = vis_utils.vis_single_box_in_img(im2show_left, calib, xyz, dim, theta)
 
-          solve_time = time.time() - solve_tic
+          # solve_time = time.time() - solve_tic
 
-      sys.stdout.write('demo mode (Press Esc to exit!) \r'\
-                        .format(detect_time, solve_time))
+      # sys.stdout.write('demo mode (Press Esc to exit!) \r'\
+      #                   .format(detect_time, solve_time))
 
       im2show = np.concatenate((im2show_left, im2show_right), axis=0)
       im2show = np.concatenate((im2show, im_box), axis=1)
