@@ -127,6 +127,8 @@ if __name__ == '__main__':
       # read video data
       _, left_frame = left_cap.read()
       _, right_frame = right_cap.read()
+
+      print('successs')
       
       # # img_l_path = 'demo/left.png'
       # # img_r_path = 'demo/right.png'
