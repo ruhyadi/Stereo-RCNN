@@ -248,7 +248,7 @@ if __name__ == '__main__':
       detect_time = det_toc - det_tic
 
       #calibration data
-      if calib_iteration:
+      if args.calib_iteration:
         calib_path = os.path.join(args.calib_path, f'{i:06}.txt')
       else:
         calib_path = os.path.join(args.calib_path, f'{i:06}.txt')
