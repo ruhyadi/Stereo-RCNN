@@ -251,7 +251,7 @@ if __name__ == '__main__':
       if args.calib_iteration:
         calib_path = os.path.join(args.calib_path, f'{i:06}.txt')
       else:
-        calib_path = os.path.join(args.calib_path, f'{i:06}.txt')
+        calib_path = os.path.join(args.calib_path)
       calib = kitti_utils.read_obj_calibration(calib_path)
 
       im2show_left = np.copy(cv2.imread(img_l_path))
