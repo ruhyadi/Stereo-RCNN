@@ -156,10 +156,15 @@ if __name__ == '__main__':
       img_right = img_right.permute(2, 0, 1).unsqueeze(0).contiguous()
 
       info = torch.from_numpy(info)
+    
+      with torch.no_grad():
+          im_left_data.resize_(img_left.size()).copy_(img_left)
+          im_right_data.resize_(img_right.size()).copy_(img_right)
+          im_info.resize_(info.size()).copy_(info)
 
-      im_left_data.data.resize_(img_left.size()).copy_(img_left)
-      im_right_data.data.resize_(img_right.size()).copy_(img_right)
-      im_info.data.resize_(info.size()).copy_(info)
+#       im_left_data.data.resize_(img_left.size()).copy_(img_left)
+#       im_right_data.data.resize_(img_right.size()).copy_(img_right)
+#       im_info.data.resize_(info.size()).copy_(info)
       
       det_tic = time.time()
       rois_left, rois_right, cls_prob, bbox_pred, bbox_pred_dim, kpts_prob,\
